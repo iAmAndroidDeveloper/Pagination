@@ -41,7 +41,7 @@ recyclerView.addOnScrollListener(new PaginationScrollListener(linearLayoutManage
   //First Page load
  private void loadFirstPage() {
 
-        callTopRatedMoviesApi().enqueue(new Callback<UserListApi>() {
+        callUserList().enqueue(new Callback<UserListApi>() {
             @Override
             public void onResponse(Call<UserListApi> call, Response<UserListApi> response) {
 
@@ -71,8 +71,8 @@ recyclerView.addOnScrollListener(new PaginationScrollListener(linearLayoutManage
     }
 
     private List<User> fetchResults(Response<UserListApi> response) {
-        UserListApi topRatedMovies = response.body();
-        return topRatedMovies.getUsers();
+        UserListApi users = response.body();
+        return users.getUsers();
     }
 
     private void loadNextPage() {
@@ -112,6 +112,6 @@ recyclerView.addOnScrollListener(new PaginationScrollListener(linearLayoutManage
     }
 
 
-    private Call<UserListApi> callTopRatedMoviesApi() {
+    private Call<UserListApi> callUserList() {
         return apiService.userListAPI(String.valueOf(currentPage));
     }
