@@ -1,0 +1,145 @@
+public class AdapterForUserList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    List<User> userList;
+
+    private static final int ITEM = 0;
+    private static final int LOADING = 1;
+
+    private Context context;
+    private boolean isLoadingAdded = false;
+
+    public AdapterForUserList(UserListActivity context) {
+        this.context = context;
+        userList = new ArrayList<>();
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        RecyclerView.ViewHolder viewHolder = null;
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+
+
+        switch (viewType) {
+            case ITEM:
+                viewHolder = getViewHolder(parent, inflater);
+                break;
+            case LOADING:
+                View v2 = inflater.inflate(R.layout.load_more_item, parent, false);
+                viewHolder = new LoadingVH(v2);
+                break;
+        }
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+
+        final User result = userList.get(position);
+
+        switch (getItemViewType(position)) {
+            case ITEM:
+                final ViewHolderForAllCategory viewData = (ViewHolderForAllCategory) holder;
+
+                viewData.<setData>
+                break;
+
+            case LOADING:
+//                Do nothing
+                break;
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return userList == null ? 0 : userList.size();
+    }
+
+
+    @NonNull
+    private RecyclerView.ViewHolder getViewHolder(ViewGroup parent, LayoutInflater inflater) {
+        RecyclerView.ViewHolder viewHolder;
+        View v1 = inflater.inflate(R.layout.row_for_user_list, parent, false);
+        viewHolder = new ViewHolderForAllCategory(v1);
+        return viewHolder;
+    }
+
+    public class ViewHolderForAllCategory extends RecyclerView.ViewHolder {
+        LinearLayout layout_details;
+       
+        public ViewHolderForAllCategory(View itemView) {
+            super(itemView);
+            layout_details = itemView.findViewById(R.id.layout_details);
+          
+        }
+    }
+
+
+    public void add(User r) {
+        userList.add(r);
+        notifyItemInserted(userList.size() - 1);
+    }
+
+    public void addAll(List<User> user) {
+        for (User result : user) {
+            add(result);
+        }
+    }
+
+    public void remove(User r) {
+        int position = userList.indexOf(r);
+        if (position > -1) {
+            userList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    public void clear() {
+        isLoadingAdded = false;
+        while (getItemCount() > 0) {
+            remove(getItem(0));
+        }
+    }
+
+    public boolean isEmpty() {
+        return getItemCount() == 0;
+    }
+
+
+    public void addLoadingFooter() {
+        isLoadingAdded = true;
+        add(new User());
+    }
+
+    public void removeLoadingFooter() {
+        isLoadingAdded = false;
+
+        int position = userList.size() - 1;
+        User result = getItem(position);
+
+        if (result != null) {
+            userList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return (position == userList.size() - 1 && isLoadingAdded) ? LOADING : ITEM;
+    }
+
+
+    public User getItem(int position) {
+        return userList.get(position);
+    }
+
+
+    protected class LoadingVH extends RecyclerView.ViewHolder {
+
+        public LoadingVH(View itemView) {
+            super(itemView);
+        }
+    }
+
+
+}
