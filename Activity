@@ -1,0 +1,117 @@
+
+ private static final int PAGE_START = 1;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private int TOTAL_PAGES;
+    private int currentPage;
+    
+currentPage = PAGE_START;
+
+recyclerView.addOnScrollListener(new PaginationScrollListener(linearLayoutManager) {
+            @Override
+            protected void loadMoreItems() {
+                isLoading = true;
+                currentPage += 1;
+
+                // mocking network delay for API call
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadNextPage();
+                    }
+                }, 1500);
+            }
+
+            @Override
+            public int getTotalPageCount() {
+                return TOTAL_PAGES;
+            }
+
+            @Override
+            public boolean isLastPage() {
+                return isLastPage;
+            }
+
+            @Override
+            public boolean isLoading() {
+                return isLoading;
+            }
+        });
+        
+  //First Page load
+ private void loadFirstPage() {
+
+        callTopRatedMoviesApi().enqueue(new Callback<UserListApi>() {
+            @Override
+            public void onResponse(Call<UserListApi> call, Response<UserListApi> response) {
+
+                if (response.isSuccessful()) {
+                    if (response.body().getSuccess().toString().equalsIgnoreCase("1")) {
+
+                        userList = fetchResults(response);
+                        adapter.addAll(userList);
+                        if (currentPage != Integer.parseInt(response.body().getPagecounter().toString()))
+                            adapter.addLoadingFooter();
+                        else isLastPage = true;
+                    } else {
+                        isLastPage = true;
+                    }
+
+                } else {
+                    isLastPage = true;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserListApi> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
+    }
+
+    private List<User> fetchResults(Response<UserListApi> response) {
+        UserListApi topRatedMovies = response.body();
+        return topRatedMovies.getUsers();
+    }
+
+    private void loadNextPage() {
+
+
+        callTopRatedMoviesApi().enqueue(new Callback<UserListApi>() {
+            @Override
+            public void onResponse(Call<UserListApi> call, Response<UserListApi> response) {
+
+                if (response.isSuccessful()) {
+                    if (response.body().getSuccess().toString().equalsIgnoreCase("1")) {
+
+                        adapter.removeLoadingFooter();
+                        isLoading = false;
+                        userList = fetchResults(response);
+                        adapter.addAll(userList);
+                        
+                        TOTAL_PAGES = Integer.parseInt(response.body().getPagecounter().toString());
+                        
+                        if (currentPage != Integer.parseInt(response.body().getPagecounter().toString()))
+                            adapter.addLoadingFooter();
+                        else isLastPage = true;
+                    } else {
+                        isLastPage = true;
+                    }
+
+                } else {
+                    isLastPage = true;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserListApi> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+    }
+
+
+    private Call<UserListApi> callTopRatedMoviesApi() {
+        return apiService.userListAPI(String.valueOf(currentPage));
+    }
